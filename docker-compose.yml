@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  postgres-dev:
+    image: postgres:12-alpine
+    container_name: postgres-dev
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=mydb-dev
+    ports:
+      - 5432:5432
+  postgres-test:
+    image: postgres:12-alpine
+    container_name: postgres-test
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=mydb-test
+    ports:
+      - 5431:5432
