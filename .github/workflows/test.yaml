@@ -11,9 +11,9 @@ jobs:
       postgres:
         image: postgres:12-alpine
         env:
-          POSTGRES_USER=root
-          POSTGRES_PASSWORD=secret
-          POSTGRES_DB=mydb-test
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB=mydb: test
         ports:
           - 5431:5432
         options:
