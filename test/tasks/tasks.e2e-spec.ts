@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
+import { setTimeout } from 'timers/promises';
 import { TasksModule } from '../../src/tasks/tasks.module';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -50,16 +52,22 @@ describe('Tasks - /tasks (e2e)', () => {
     let app: INestApplication;
     let tasksRepository: Repository<Task>;
 
+    let postgreSqlContainer: StartedPostgreSqlContainer;
+    jest.setTimeout(30000);
+
     beforeAll(async () => {
+        postgreSqlContainer = await new PostgreSqlContainer('postgres').start();
+
+        await setTimeout(3000);
         const module: TestingModule = await Test.createTestingModule({
             imports: [
                 TypeOrmModule.forRoot({
                     type: 'postgres',
-                    host: 'localhost',
-                    port: 5431,
-                    username: 'root',
-                    password: 'secret',
-                    database: 'mydb-test',
+                    host: postgreSqlContainer.getHost(),
+                    port: postgreSqlContainer.getPort(),
+                    username: postgreSqlContainer.getUsername(),
+                    password: postgreSqlContainer.getPassword(),
+                    database: postgreSqlContainer.getDatabase(),
                     autoLoadEntities: true,
                     synchronize: true
                 }),
@@ -200,6 +208,7 @@ describe('Tasks - /tasks (e2e)', () => {
     })
 
     afterAll(async () => {
+        postgreSqlContainer.stop();
         await app.close();
     });
 
