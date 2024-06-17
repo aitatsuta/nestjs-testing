@@ -56,7 +56,12 @@ describe('TasksService', () => {
                 TasksService,
                 {
                     provide: getRepositoryToken(Task),
-                    useClass: Repository,
+                    useValue: {
+                        save: jest.fn().mockResolvedValue(oneTask),
+                        find: jest.fn().mockResolvedValue(taskArray),
+                        findOne: jest.fn().mockResolvedValue(oneTask),
+                        delete: jest.fn().mockResolvedValue(defaultResult),
+                    }
                 },
             ],
         }).compile();
@@ -71,15 +76,15 @@ describe('TasksService', () => {
 
     describe('create()', () => {
         it('should insert a task', () => {
-            const repoSpy = jest.spyOn(repository, 'save').mockImplementation(async () => oneTask);
+            const repoSpy = jest.spyOn(repository, 'save');
             expect(service.create(createTaskDto)).resolves.toEqual(oneTask);
             expect(repoSpy).toHaveBeenCalledWith(createTaskDto);
         });
     });
 
     describe('findAll()', () => {
-        it('should get an array of tasks', () => {
-            const repoSpy = jest.spyOn(repository, 'find').mockImplementation(async () => taskArray);
+        it('should get an array of tasks', async () => {
+            const repoSpy = jest.spyOn(repository, 'find');
             expect(service.findAll()).resolves.toEqual(taskArray);
             expect(repoSpy).toHaveBeenCalled();
         });
@@ -87,7 +92,7 @@ describe('TasksService', () => {
 
     describe('findOne()', () => {
         it('should get a task', () => {
-            const repoSpy = jest.spyOn(repository, 'findOne').mockImplementation(async () => oneTask);
+            const repoSpy = jest.spyOn(repository, 'findOne');
             expect(service.findOne('1')).resolves.toEqual(oneTask);
             expect(repoSpy).toHaveBeenCalledWith(
                 { where: {id: 1} }
@@ -97,15 +102,13 @@ describe('TasksService', () => {
 
     describe('update()', () => {
         it('should update a task', () => {
-            jest.spyOn(repository, 'findOne').mockImplementation(async () => oneTask);
-            jest.spyOn(repository, 'save').mockImplementation(async () => oneTask);
             expect(service.update('1', updateTaskDto)).resolves.toEqual(updatedTask);
         });
     });
 
     describe('delete()', () => {
         it('should delete a task', () => {
-            const repoSpy = jest.spyOn(repository, 'delete').mockImplementation(async () => defaultResult);
+            const repoSpy = jest.spyOn(repository, 'delete');
             expect(service.delete('1')).resolves.toEqual(defaultResult);
             expect(repoSpy).toHaveBeenCalledWith('1');            
         });
