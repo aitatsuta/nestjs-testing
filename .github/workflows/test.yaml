@@ -36,6 +36,18 @@ jobs:
       - name: Waiting for Starting Integration Environment
         run: sleep 30
 
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: '**/node_modules'
+          key: node-modules-${{ hashFiles('**/package-lock.json') }}      
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm run test:e2e
+
       - name: Clean up Docker images
         if: always()
         run: docker-compose down --rmi all --volumes

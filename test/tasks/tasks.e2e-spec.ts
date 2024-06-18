@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
-import { setTimeout } from 'timers/promises';
 import { TasksModule } from '../../src/tasks/tasks.module';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { setTimeout } from 'timers/promises';
 import { Task } from '../../src/tasks/task.entity';
 
 describe('Tasks - /tasks (e2e)', () => {
@@ -49,25 +47,19 @@ describe('Tasks - /tasks (e2e)', () => {
         isCompleted: 'true',
     }
 
-    let app: INestApplication;
     let tasksRepository: Repository<Task>;
-
-    let postgreSqlContainer: StartedPostgreSqlContainer;
-    jest.setTimeout(30000);
+    const destination = 'http://localhost:3000';
 
     beforeAll(async () => {
-        postgreSqlContainer = await new PostgreSqlContainer('postgres').start();
-
-        await setTimeout(3000);
         const module: TestingModule = await Test.createTestingModule({
             imports: [
                 TypeOrmModule.forRoot({
                     type: 'postgres',
-                    host: postgreSqlContainer.getHost(),
-                    port: postgreSqlContainer.getPort(),
-                    username: postgreSqlContainer.getUsername(),
-                    password: postgreSqlContainer.getPassword(),
-                    database: postgreSqlContainer.getDatabase(),
+                    host: 'localhost',
+                    port: 5432,
+                    username: 'root',
+                    password:'secret',
+                    database: 'mydb-dev',
                     autoLoadEntities: true,
                     synchronize: true
                 }),
@@ -75,15 +67,11 @@ describe('Tasks - /tasks (e2e)', () => {
             ],
         }).compile();
 
-        app = module.createNestApplication();
-        app.useGlobalPipes(new ValidationPipe());
-        await app.init();
-
         tasksRepository = module.get<Repository<Task>>(getRepositoryToken(Task));
     });
 
     it('Create a task [POST /tasks]', () => {
-        return request(app.getHttpServer())
+        return request(destination)
             .post('/tasks')
             .send(taskA)
             .expect(201)
@@ -98,7 +86,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Get all tasks [GET /tasks]', async () => {
         const taskArray = await tasksRepository.save([taskA, taskB, taskC]);
-        return request(app.getHttpServer())
+        return request(destination)
             .get('/tasks')
             .expect(200)
             .then(({ body }) => {
@@ -108,7 +96,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Get a task [GET /tasks/:id]', async () => {
         const createdTask = await tasksRepository.save(taskA);
-        return request(app.getHttpServer())
+        return request(destination)
             .get(`/tasks/${createdTask.id}`)
             .expect(200)
             .then(({ body }) => {
@@ -118,7 +106,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Update a task [PATCH /tasks/:id]', async () => {
         const task = await tasksRepository.save(taskA);
-        return request(app.getHttpServer())
+        return request(destination)
             .patch(`/tasks/${task.id}`)
             .send(updateTask)
             .expect(200)
@@ -132,7 +120,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Delete a task [DELETE /tasks/:id]', async () => {
         const task = await tasksRepository.save(taskA);
-        return request(app.getHttpServer())
+        return request(destination)
             .delete(`/tasks/${task.id}`)
             .expect(200)
             .then(({ body }) => {
@@ -141,7 +129,7 @@ describe('Tasks - /tasks (e2e)', () => {
     });
 
     it('Should not create a task with empty name [POST /tasks]', () => {
-        return request(app.getHttpServer())
+        return request(destination)
             .post('/tasks')
             .send(taskWithNameEmpty)
             .expect(400)
@@ -155,7 +143,7 @@ describe('Tasks - /tasks (e2e)', () => {
     });
 
     it('Should not create a task with invalid name [POST /tasks]', () => {
-        return request(app.getHttpServer())
+        return request(destination)
             .post('/tasks')
             .send(taskWithInvalidName)
             .expect(400)
@@ -170,7 +158,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Should not update a task with empty isCompleted [PATCH /tasks/:id]', async () => {
         const task = await tasksRepository.save(taskA);
-        return request(app.getHttpServer())
+        return request(destination)
             .patch(`/tasks/${task.id}`)
             .send(taskWithIsCompletedEmpty)
             .expect(400)
@@ -188,7 +176,7 @@ describe('Tasks - /tasks (e2e)', () => {
 
     it('Should not update a task with string isCompleted [PATCH /tasks/:id]', async () => {
         const task = await tasksRepository.save(taskA);
-        return request(app.getHttpServer())
+        return request(destination)
             .patch(`/tasks/${task.id}`)
             .send(taskWithInvalidIsCompleted)
             .expect(400)
@@ -206,8 +194,6 @@ describe('Tasks - /tasks (e2e)', () => {
     })
 
     afterAll(async () => {
-        postgreSqlContainer.stop();
-        await app.close();
     });
 
 });
