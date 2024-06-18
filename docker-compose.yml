@@ -1,35 +1,36 @@
 version: "3.9"
 
 services:
-  postgres-dev:
+  nestjs-testing:
+    image: nestjs-testing:TEST
+    container_name: nestjs-testing
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgresql
+    networks:
+      - my-nw
+    environment:
+      DATABASE_HOST: postgresql
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: secret
+      DATABASE_NAME: mydb-dev
+
+  postgresql:
     image: postgres:12-alpine
     container_name: postgres-dev
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=mydb-dev
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: mydb-dev
     ports:
       - 5432:5432
-  postgres-test:
-    image: postgres:12-alpine
-    container_name: postgres-test
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=mydb-test
-    ports:
-      - 5431:5432
+    networks:
+      - my-nw
 
-  sonarqube:
-    image: sonarqube:9.9-community
-    ports:
-      - 9000:9000
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_extensions:/opt/sonarqube/extensions
-      - sonarqube_logs:/opt/sonarqube/logs
-
-volumes:
-  sonarqube_data:
-  sonarqube_extensions:
-  sonarqube_logs:
+networks:
+  my-nw:
+    driver: bridge
