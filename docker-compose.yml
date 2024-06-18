@@ -2,7 +2,6 @@ version: "3.9"
 
 services:
   nestjs-testing:
-    image: nestjs-testing:TEST
     container_name: nestjs-testing
     build:
       dockerfile: Dockerfile

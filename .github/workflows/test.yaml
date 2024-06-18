@@ -29,8 +29,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      
       - name: Startup Integration Environment
-        run: docker-compose up -d
+        run: docker-compose -f ./docker-compose.yml up -d
 
       - name: Waiting for Starting Integration Environment
         run: sleep 30
