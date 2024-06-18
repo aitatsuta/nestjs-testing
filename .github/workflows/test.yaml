@@ -34,7 +34,7 @@ jobs:
         run: docker-compose -f ./docker-compose.yml up -d
 
       - name: Waiting for Starting Integration Environment
-        run: sleep 30
+        run: sleep 5
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -45,7 +45,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
+      - name: Run integration tests
         run: npm run test:e2e
 
       - name: Clean up Docker images
