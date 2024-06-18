@@ -29,3 +29,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Startup Integration Environment
+        run: docker-compose up -d
+
+      - name: Waiting for Starting Integration Environment
+        run: sleep 30
+
+      - name: Clean up Docker images
+        if: always()
+        run: docker-compose down --rmi all --volumes
+        continue-on-error: true               
