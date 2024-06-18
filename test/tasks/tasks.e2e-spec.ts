@@ -168,40 +168,38 @@ describe('Tasks - /tasks (e2e)', () => {
             });
     });
 
-    // it('Should not update a task with empty isCompleted [PATCH /tasks/:id]', async () => {
-    //     const task = await tasksRepository.save(taskA);
-    //     return request(app.getHttpServer())
-    //         .patch(`/tasks/${task.id}`)
-    //         .send(taskWithIsCompletedEmpty)
-    //         .expect(400)
-    //         .then(({ body }) => {
-    //             expect(body).toEqual({
-    //                 statusCode: 400,
-    //                 message: [
-    //                     'isComplated must be a boolean value',
-    //                     'isComplated should not be empty',
-    //                 ],
-    //                 error: 'Bad Request',
-    //             });
-    //         });
-    // });
+    it('Should not update a task with empty isCompleted [PATCH /tasks/:id]', async () => {
+        const task = await tasksRepository.save(taskA);
+        return request(app.getHttpServer())
+            .patch(`/tasks/${task.id}`)
+            .send(taskWithIsCompletedEmpty)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body).toEqual({
+                    statusCode: 400,
+                    message: [
+                        'isCompleted must be a boolean value',
+                        'isCompleted should not be empty',
+                    ],
+                    error: 'Bad Request',
+                });
+            });
+    });
 
-    // it('Should not update a task with string isCompleted [PATCH /tasks/:id]', async () => {
-    //     const task = await tasksRepository.save(taskA);
-    //     return request(app.getHttpServer())
-    //         .patch(`/tasks/${task.id}`)
-    //         .send(taskWithInvalidIsCompleted)
-    //         .expect(400)
-    //         .then(({ body }) => {
-    //             expect(body).toEqual({
-    //                 statusCode: 400,
-    //                 message: [
-    //                     'isComplated must be a boolean value'
-    //                 ],
-    //                 error: 'Bad Request',
-    //             });
-    //         });
-    // });
+    it('Should not update a task with string isCompleted [PATCH /tasks/:id]', async () => {
+        const task = await tasksRepository.save(taskA);
+        return request(app.getHttpServer())
+            .patch(`/tasks/${task.id}`)
+            .send(taskWithInvalidIsCompleted)
+            .expect(400)
+            .then(({ body }) => {
+                expect(body).toEqual({
+                    statusCode: 400,
+                    message: ['isCompleted must be a boolean value'],
+                    error: 'Bad Request',
+                });
+            });
+    });
 
     afterEach(async () => {
         await tasksRepository.query(`DELETE FROM task;`);
