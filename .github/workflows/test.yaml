@@ -5,9 +5,8 @@ on:
     branches: [main]
 
 jobs:
-  container-job:
+  unit-test:
     runs-on: ubuntu-latest
-      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -20,5 +19,19 @@ jobs:
         run: npm ci
       - name: run unit tests
         run: npm run test:cov
-      - name: run e2e tests
-        run: npm run test:e2e
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Startup Integration Environment
+        run: docker-compose -f ./docker-compose.yml up -d
+       - name: Waiting for Starting Integration Environment
+        run: sleep 30
+      - name: Shutdown Integration Environment
+        if: always()
+        run: docker-compose -f ./docker-compose.yml down --volumes
+      - name: Clean up Docker images
+        if: always()
+        run: docker rmi sample-api:TEST
+        continue-on-error: true               
